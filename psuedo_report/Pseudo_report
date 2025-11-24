@@ -1,3 +1,8 @@
 Showing about our schema:
 We designed a fine-grained label schema focusing on information that recruiters and applicants care about, such as job title,
 required skills, education, experience, compensation, and benefits.
+
+Baseline 1 — All-O Model:
+As expected, a trivial model that predicts only the “O” label achieves an accuracy biased by the high frequency of non-entity tokens.
+Precision, recall, and F1 for all entity labels are 0 since the model never predicts any entities.
+Seqeval issues an UndefinedMetricWarning for labels with no predicted samples, which is expected in this baseline.
