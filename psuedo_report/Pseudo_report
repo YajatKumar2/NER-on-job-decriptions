@@ -1,3 +1,154 @@
 Showing about our schema:
 We designed a fine-grained label schema focusing on information that recruiters and applicants care about, such as job title,
 required skills, education, experience, compensation, and benefits.
+
+Baseline 1 — All-O Model:
+As expected, a trivial model that predicts only the “O” label achieves an accuracy biased by the high frequency of non-entity tokens.
+Precision, recall, and F1 for all entity labels are 0 since the model never predicts any entities.
+Seqeval issues an UndefinedMetricWarning for labels with no predicted samples, which is expected in this baseline.
+
+After Baseline 3
+Where this fits in your project
+Put all this code in notebooks/02_baselines.ipynb, in a section called
+### Baseline 3 – Rule-based NER.
+In your report, describe it as:
+A gazetteer-based baseline using curated lists (job titles, skills, tools, etc.).
+Longest-match-first phrase matching with BIO tags.
+
+----------------------------------------------------------------------------------------------------------------------
+Progress Report: NER on Job Descriptions (Up to Baseline 3)
+1. Environment Setup
+To ensure a consistent and reproducible development environment, all required libraries were installed
+inside a dedicated Jupyter Notebook kernel. This prevents mismatches between system Python and Jupyter’s Python environment.
+The following libraries were installed:
+spaCy (for pretrained NER baseline)
+Transformers & datasets (for upcoming model fine-tuning)
+seqeval (for NER evaluation)
+pandas, matplotlib, scikit-learn (for data handling and visuals)
+Example installation cell:
+!pip install spacy
+!python -m spacy download en_core_web_sm
+!pip install transformers datasets seqeval pandas matplotlib scikit-learn
+This step ensures the project is ready for training NER models and evaluating them consistently.
+2. Project Structure Setup
+A clean modular directory was created:
+job_ner_project/
+│
+├── data/
+│   ├── raw/                # Original job descriptions (20)
+│   └── annotated/          # Labeled BIO-format dataset
+│
+├── notebooks/              # For exploration & model development
+├── models/                 # Saved baseline & trained model files
+├── reports/                # Final project report, plots, summaries
+└── src/                    # Python scripts for training & evaluation
+This structure helps keep raw data, annotations, notebooks, scripts, and models neatly separated.
+3. Dataset Collection
+A dataset of 20 job descriptions was created to represent real-world postings across multiple companies, job titles,
+technologies, and locations.
+Each job description was saved as:
+data/raw/jd_001.txt
+data/raw/jd_002.txt
+...
+data/raw/jd_020.txt
+This forms the raw corpus on which the NER model operates.
+4. Manual Annotation (BIO Format)
+To build a supervised NER model, manual annotations were required.
+This was done using a custom fine-grained label schema:
+JOB_TITLE
+COMPANY
+LOCATION
+EMPLOYEMENT_TYPE
+SKILL_TECH
+PROGRAMMING_LANGUAGE
+FRAMEWORK
+TOOL
+EDUCATION_LEVEL
+DEGREE_MAJOR
+Each job description was tokenized and labeled using the BIO tagging scheme:
+B-LABEL → beginning of the entity
+I-LABEL → inside the entity
+O → outside any entity
+I generated a complete, consistent annotation for all 20 job descriptions and compiled them into:
+data/annotated/job_ner_annotations_full_20_jds.csv
+This CSV is the core training dataset for everything moving forward.
+5. Data Preparation Inside Notebook
+Inside 02_baselines.ipynb, the annotated CSV was loaded:
+df = pd.read_csv("data/annotated/job_ner_annotations_full_20_jds.csv")
+Then the rows were grouped by sentence_id so each job description becomes one labeled sequence:
+sentences_tokens = []
+sentences_labels = []
+
+for sent_id, group in df.groupby("sentence_id"):
+    sentences_tokens.append(group["token"].tolist())
+    sentences_labels.append(group["label"].tolist())
+A simple 80/20 train-test split was performed:
+First 16 job descriptions → train
+Last 4 job descriptions → test
+6. Baseline 1 — All-O Model
+The simplest possible NER model predicts O for every token.
+Purpose:
+To create a “worst-case baseline” that highlights the difficulty of the task.
+Implementation:
+pred_all_o = [["O"] * len(seq) for seq in test_tokens]
+print(classification_report(test_labels, pred_all_o))
+Results:
+Precision, recall, and F1 for all entity types = 0
+seqeval correctly raised UndefinedMetricWarning (expected)
+Serves as reference for evaluating better models
+7. Baseline 2 — Pretrained spaCy NER
+We evaluated spaCy’s en_core_web_sm model, which is trained on general-purpose text (news, web data) and not job descriptions.
+Steps performed:
+Loaded spaCy model
+Loaded raw job descriptions
+Ran spaCy to extract ORG, GPE, and LOC
+Mapped them to our schema:
+ORG → COMPANY
+GPE / LOC → LOCATION
+Converted spaCy outputs to BIO tags aligned with tokens
+Evaluated using seqeval
+Expected outcome:
+Detects some companies and locations correctly
+Performs poorly on job-specific labels like JOB_TITLE, TOOL, etc.
+This provides a realistic pretrained baseline.
+8. Baseline 3 — Rule-Based NER
+We built a rule-based system using:
+Keyword lists (gazetteers)
+Longest-match-first phrase matching
+Defined dictionaries for:
+job titles
+companies
+locations
+tools
+frameworks
+programming languages
+technical skills
+degrees
+education levels
+Example:
+job_titles = {"data scientist", "software engineer", ...}
+programming_languages = {"python", "java", "kotlin", ...}
+tools = {"sql", "excel", "docker", ...}
+A conversion map was created:
+phrase2label["data scientist"] = "JOB_TITLE"
+phrase2label["sql"] = "TOOL"
+...
+The rule-based tagging function applied greedy longest-match tagging:
+labels = rule_based_tag(tokens)
+Evaluation on the test set showed:
+Better performance than All-O and spaCy baselines
+Successfully detects many tools, languages, frameworks
+Missing some ambiguous or multi-word entities
+This makes it a strong baseline before training machine-learning models.
+🌟 Summary of Progress So Far
+You have:
+✔ Fully prepared the environment
+✔ Collected 20 realistic job descriptions
+✔ Built a high-quality, labeled BIO dataset
+✔ Established a clean project structure
+✔ Implemented and evaluated three baseline models
+ • All-O baseline
+ • SpaCy pretrained NER baseline
+ • Rule-based NER baseline (gazetteer-based)
+
+---------------------------------------------------------------------------------------------------------------------------
