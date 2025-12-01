@@ -1,0 +1,5 @@
+The bid dataset used is:
+lang-uk/recruitment-dataset-job-descriptions-english
+
+url:
+https://huggingface.co/datasets/lang-uk/recruitment-dataset-job-descriptions-english
