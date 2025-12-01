@@ -1,9 +1,0 @@
-So we need plan a project, in which we design a domain-specific Named Entity Recognition (NER) system 
-for job descriptions that extracts a rich set of entities useful for HR and recruitment applications.
-
-Text needed for Intro:
-Job descriptions contain a lot of unstructured text describing roles, skills, experience, salary, and benefits. 
-Human recruiters or automated systems need structured information (title, company, skills, years of experience, etc.) 
-to match candidates, analyze the job market, and build recommendation systems.
-In this project, we design a domain-specific Named Entity Recognition (NER) system for job descriptions 
-that extracts a rich set of entities useful for HR and recruitment applications.
